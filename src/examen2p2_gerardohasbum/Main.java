@@ -200,7 +200,7 @@ public class Main extends javax.swing.JFrame {
         Tiempo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Tiempo.setForeground(new java.awt.Color(0, 0, 0));
 
-        jpbJugador1.setMaximum(10000);
+        jpbJugador1.setMaximum(1000);
         jpbJugador1.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jpbJugador1StateChanged(evt);
@@ -216,7 +216,7 @@ public class Main extends javax.swing.JFrame {
         Jugador2.setText("jLabel17");
 
         jpbJugador2.setForeground(new java.awt.Color(255, 102, 102));
-        jpbJugador2.setMaximum(10000);
+        jpbJugador2.setMaximum(1000);
         jpbJugador2.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jpbJugador2StateChanged(evt);
@@ -240,16 +240,6 @@ public class Main extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel15)
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(Jugador1)
-                                    .addComponent(Tiempo)
-                                    .addComponent(Jugador2)))))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(32, 32, 32)
                         .addComponent(jpbJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
@@ -257,7 +247,17 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(jpbJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(151, 151, 151)
-                        .addComponent(jbIniciarSimulacion)))
+                        .addComponent(jbIniciarSimulacion))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(171, 171, 171)
+                        .addComponent(Jugador2))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(161, 161, 161)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(Jugador1)
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel15)
+                                .addComponent(Tiempo)))))
                 .addContainerGap(33, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -548,8 +548,8 @@ public class Main extends javax.swing.JFrame {
         this.setVisible(false);
         Simulacion.pack();
         Simulacion.setVisible(true);
-        Jugador1.setText(jcbCarro1.getSelectedItem().toString());
-        Jugador2.setText(jcbCarro2.getSelectedItem().toString());
+        Jugador1.setText(((Carro)jcbCarro1.getSelectedItem()).getModelo());
+        Jugador2.setText(((Carro)jcbCarro2.getSelectedItem()).getModelo());
         jpbJugador1.setValue(0);
         jpbJugador2.setValue(0);
         Tiempo.setText(null);

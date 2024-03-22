@@ -17,9 +17,7 @@ import javax.swing.JLabel;
  */
 public class HiloTiempo implements Runnable{
     
-    private Date tiempo;
     private JLabel label;
-    private SimpleDateFormat f = new SimpleDateFormat("hh:ss");
     int segundos, minutos;
     private boolean vive = true;
 

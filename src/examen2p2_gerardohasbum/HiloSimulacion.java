@@ -65,7 +65,7 @@ public class HiloSimulacion implements Runnable {
 
             try {
 
-                Thread.sleep(15);
+                Thread.sleep(1000);
 
             } catch (InterruptedException e) {
 
