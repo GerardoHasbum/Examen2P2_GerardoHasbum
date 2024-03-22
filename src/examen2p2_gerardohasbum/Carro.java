@@ -20,6 +20,8 @@ public class Carro implements Serializable{
         this.Marca = Marca;
         this.Velocidad = Velocidad;
     }
+    
+    private Long SerialUID = 777L;
 
     public String getModelo() {
         return Modelo;

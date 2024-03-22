@@ -15,6 +15,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -31,7 +34,15 @@ public class Main extends javax.swing.JFrame {
     }
 
     ArrayList<Carro> lista = new ArrayList();
-    File archivo = new File("./Carros.bin");
+    File archivo = new File("./Carros.txt");
+    String ganador = "";
+    boolean WIN = false;
+    HiloSimulacion Carro1 = null;
+    HiloSimulacion Carro2 = null;
+    Thread proceso1 = null;
+    Thread proceso2 = null;
+    HiloTiempo tiempo = null;
+    Thread procesoTiempo = null;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -55,7 +66,7 @@ public class Main extends javax.swing.JFrame {
         Simulacion = new javax.swing.JDialog();
         jPanel3 = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
+        Tiempo = new javax.swing.JLabel();
         jpbJugador1 = new javax.swing.JProgressBar();
         Jugador1 = new javax.swing.JLabel();
         Jugador2 = new javax.swing.JLabel();
@@ -82,7 +93,6 @@ public class Main extends javax.swing.JFrame {
         Marca2 = new javax.swing.JLabel();
         Velocidad1 = new javax.swing.JLabel();
         Velocidad2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
 
         jPanel2.setBackground(new java.awt.Color(255, 153, 153));
 
@@ -121,6 +131,11 @@ public class Main extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jtfIngresarMarca)
+                            .addComponent(jtfIngresarModelo)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(119, 119, 119)
@@ -133,20 +148,15 @@ public class Main extends javax.swing.JFrame {
                                 .addComponent(jLabel13))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(167, 167, 167)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jsVelocidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel14))))
-                        .addGap(0, 119, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jtfIngresarMarca)
-                            .addComponent(jtfIngresarModelo))))
+                                .addComponent(jLabel14))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(145, 145, 145)
+                                .addComponent(jbGuardarCarro))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(130, 130, 130)
+                                .addComponent(jsVelocidad, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 119, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(145, 145, 145)
-                .addComponent(jbGuardarCarro)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -187,9 +197,15 @@ public class Main extends javax.swing.JFrame {
         jLabel15.setForeground(new java.awt.Color(0, 0, 0));
         jLabel15.setText("TIEMPO");
 
-        jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        Tiempo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        Tiempo.setForeground(new java.awt.Color(0, 0, 0));
 
-        jpbJugador1.setMaximum(100000);
+        jpbJugador1.setMaximum(10000);
+        jpbJugador1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jpbJugador1StateChanged(evt);
+            }
+        });
 
         Jugador1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Jugador1.setForeground(new java.awt.Color(0, 0, 0));
@@ -200,12 +216,22 @@ public class Main extends javax.swing.JFrame {
         Jugador2.setText("jLabel17");
 
         jpbJugador2.setForeground(new java.awt.Color(255, 102, 102));
-        jpbJugador2.setMaximum(100000);
+        jpbJugador2.setMaximum(10000);
+        jpbJugador2.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jpbJugador2StateChanged(evt);
+            }
+        });
 
         jbIniciarSimulacion.setBackground(new java.awt.Color(204, 204, 204));
         jbIniciarSimulacion.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jbIniciarSimulacion.setForeground(new java.awt.Color(0, 0, 0));
         jbIniciarSimulacion.setText("Iniciar");
+        jbIniciarSimulacion.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jbIniciarSimulacionMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -221,7 +247,7 @@ public class Main extends javax.swing.JFrame {
                                 .addGap(6, 6, 6)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(Jugador1)
-                                    .addComponent(jLabel16)
+                                    .addComponent(Tiempo)
                                     .addComponent(Jugador2)))))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(32, 32, 32)
@@ -240,7 +266,7 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel15)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel16)
+                .addComponent(Tiempo)
                 .addGap(49, 49, 49)
                 .addComponent(Jugador1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -285,9 +311,19 @@ public class Main extends javax.swing.JFrame {
 
         jcbCarro1.setBackground(new java.awt.Color(204, 204, 204));
         jcbCarro1.setForeground(new java.awt.Color(0, 0, 0));
+        jcbCarro1.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jcbCarro1ItemStateChanged(evt);
+            }
+        });
 
         jcbCarro2.setBackground(new java.awt.Color(204, 204, 204));
         jcbCarro2.setForeground(new java.awt.Color(0, 0, 0));
+        jcbCarro2.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jcbCarro2ItemStateChanged(evt);
+            }
+        });
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(0, 0, 0));
@@ -327,6 +363,11 @@ public class Main extends javax.swing.JFrame {
         jbIniciar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jbIniciar.setForeground(new java.awt.Color(0, 0, 0));
         jbIniciar.setText("Iniciar");
+        jbIniciar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jbIniciarMouseClicked(evt);
+            }
+        });
 
         Modelo1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         Modelo1.setForeground(new java.awt.Color(0, 0, 0));
@@ -345,13 +386,6 @@ public class Main extends javax.swing.JFrame {
 
         Velocidad2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         Velocidad2.setForeground(new java.awt.Color(0, 0, 0));
-
-        jButton1.setText("jButton1");
-        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jButton1MouseClicked(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -408,10 +442,6 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(jbCrear))
                     .addComponent(jbIniciar, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(28, 28, 28)
-                .addComponent(jButton1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -456,9 +486,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Velocidad1)
                     .addComponent(Velocidad2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
-                .addComponent(jButton1)
-                .addGap(13, 13, 13)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 120, Short.MAX_VALUE)
                 .addComponent(jbIniciar, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(120, 120, 120))
         );
@@ -496,10 +524,117 @@ public class Main extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jbGuardarCarroMouseClicked
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+    private void jcbCarro1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jcbCarro1ItemStateChanged
         // TODO add your handling code here:
 
-    }//GEN-LAST:event_jButton1MouseClicked
+        Carro temp = (Carro) jcbCarro1.getSelectedItem();
+        Marca1.setText(temp.getMarca());
+        Modelo1.setText(temp.getModelo());
+        Velocidad1.setText("" + temp.getVelocidad());
+
+    }//GEN-LAST:event_jcbCarro1ItemStateChanged
+
+    private void jcbCarro2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jcbCarro2ItemStateChanged
+        // TODO add your handling code here:
+        Carro temp = (Carro) jcbCarro2.getSelectedItem();
+        Marca2.setText(temp.getMarca());
+        Modelo2.setText(temp.getModelo());
+        Velocidad2.setText("" + temp.getVelocidad());
+    }//GEN-LAST:event_jcbCarro2ItemStateChanged
+
+    private void jbIniciarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbIniciarMouseClicked
+        // TODO add your handling code here:
+
+        this.setVisible(false);
+        Simulacion.pack();
+        Simulacion.setVisible(true);
+        Jugador1.setText(jcbCarro1.getSelectedItem().toString());
+        Jugador2.setText(jcbCarro2.getSelectedItem().toString());
+        jpbJugador1.setValue(0);
+        jpbJugador2.setValue(0);
+        Tiempo.setText(null);
+        WIN = false;
+
+    }//GEN-LAST:event_jbIniciarMouseClicked
+
+    private void jbIniciarSimulacionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbIniciarSimulacionMouseClicked
+        // TODO add your handling code here:
+
+        Carro temp1 = (Carro) jcbCarro1.getSelectedItem();
+        Carro temp2 = (Carro) jcbCarro2.getSelectedItem();
+
+        Carro1 = new HiloSimulacion(jpbJugador1, temp1);
+        Carro2 = new HiloSimulacion(jpbJugador2, temp2);
+        proceso1 = new Thread(Carro1);
+        proceso2 = new Thread(Carro2);
+        proceso1.start();
+        proceso2.start();
+
+        tiempo = new HiloTiempo(Tiempo);
+        procesoTiempo = new Thread(tiempo);
+        procesoTiempo.start();
+
+    }//GEN-LAST:event_jbIniciarSimulacionMouseClicked
+
+    private void jpbJugador1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jpbJugador1StateChanged
+        // TODO add your handling code here:
+
+        if (jpbJugador1.getValue() >= jpbJugador1.getMaximum() && !WIN) {
+
+            ganador = Jugador1.getText();
+            WIN = true;
+            Carro1.setVive(false);
+            Carro2.setVive(false);
+            tiempo.setVive(false);
+            Carro1 = null;
+            Carro2 = null;
+            proceso1 = null;
+            proceso2 = null;
+            tiempo = null;
+            procesoTiempo = null;
+
+            if (jpbJugador1.getValue() == jpbJugador2.getValue()) {
+                JOptionPane.showMessageDialog(this, "Fue un empate a los " + Tiempo.getText());
+            } else {
+
+                JOptionPane.showMessageDialog(this, "El Jugador 1 ha ganado con " + ganador + " a los " + Tiempo.getText());
+
+            }
+            Simulacion.setVisible(false);
+            this.pack();
+            this.setVisible(true);
+
+        }
+        if (jpbJugador2.getValue() >= jpbJugador2.getMaximum() && !WIN) {
+            ganador = Jugador2.getText();
+            WIN = true;
+            Carro1.setVive(false);
+            Carro2.setVive(false);
+            tiempo.setVive(false);
+            Carro1 = null;
+            Carro2 = null;
+            proceso1 = null;
+            proceso2 = null;
+            tiempo = null;
+            procesoTiempo = null;
+            if (jpbJugador1.getValue() == jpbJugador2.getValue()) {
+
+            } else {
+
+                JOptionPane.showMessageDialog(this, "El Jugador 2 ha ganado con " + ganador + " a los " + Tiempo.getText());
+
+            }
+            Simulacion.setVisible(false);
+            this.pack();
+            this.setVisible(true);
+        }
+
+
+    }//GEN-LAST:event_jpbJugador1StateChanged
+
+    private void jpbJugador2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jpbJugador2StateChanged
+
+    }//GEN-LAST:event_jpbJugador2StateChanged
 
     /**
      * @param args the command line arguments
@@ -543,7 +678,7 @@ public class Main extends javax.swing.JFrame {
 
         try {
 
-            fos = new FileOutputStream(archivo);
+            fos = new FileOutputStream(archivo, false);
             oos = new ObjectOutputStream(fos);
 
             for (Carro c : lista) {
@@ -573,17 +708,48 @@ public class Main extends javax.swing.JFrame {
             ois = new ObjectInputStream(fis);
             lista = new ArrayList();
 
-            while (ois.readObject() != null) {
+            Carro temp;
+            while ((temp = (Carro) ois.readObject()) != null) {
 
-                lista.add((Carro) ois.readObject());
+                lista.add(temp);
+                Marca1.setText(lista.get(0).getMarca());
+                Marca2.setText(lista.get(0).getMarca());
+                Modelo1.setText(lista.get(0).getModelo());
+                Modelo2.setText(lista.get(0).getModelo());
+                Velocidad1.setText("" + lista.get(0).getVelocidad());
+                Velocidad2.setText("" + lista.get(0).getVelocidad());
 
             }
+
+            for (Carro carro : lista) {
+                System.out.println(carro.toString());
+            }
+
+            fis.close();
+            ois.close();
 
         } catch (IOException e) {
 
         } catch (ClassNotFoundException e) {
         }
 
+        ActualizarCombo();
+    }
+
+    public void ActualizarCombo() {
+
+        DefaultComboBoxModel modelo1 = new DefaultComboBoxModel();
+        DefaultComboBoxModel modelo2 = new DefaultComboBoxModel();
+
+        for (Carro c : lista) {
+
+            modelo1.addElement(c);
+            modelo2.addElement(c);
+
+        }
+
+        jcbCarro1.setModel(modelo1);
+        jcbCarro2.setModel(modelo2);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -595,9 +761,9 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel Modelo1;
     private javax.swing.JLabel Modelo2;
     private javax.swing.JDialog Simulacion;
+    private javax.swing.JLabel Tiempo;
     private javax.swing.JLabel Velocidad1;
     private javax.swing.JLabel Velocidad2;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -605,7 +771,6 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
